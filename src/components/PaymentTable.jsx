@@ -79,7 +79,8 @@ const PaymentTable = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Vista para Escritorio (Tabla) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-[10px] uppercase text-zinc-500 font-bold border-b border-zinc-200 dark:border-zinc-800">
@@ -153,6 +154,49 @@ const PaymentTable = () => {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Vista para Móvil (Tarjetas) */}
+      <div className="md:hidden divide-y divide-zinc-100 dark:divide-zinc-800">
+        {filteredJugadores.map((jugador) => {
+          const pago = getEstadoJugador(jugador.id);
+          return (
+            <div key={jugador.id} className={`p-4 ${pago ? 'bg-green-50/20' : 'bg-white dark:bg-zinc-900'}`}>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${pago ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-500'}`}>
+                    {jugador.socioNr}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-zinc-900 dark:text-white uppercase">{jugador.apellido} {jugador.nombre}</p>
+                    <p className="text-[10px] text-zinc-400 font-mono">DNI: {jugador.dni} | FN: {jugador.fn}</p>
+                  </div>
+                </div>
+                {pago && <CheckCircle2 size={18} className="text-green-600" />}
+              </div>
+              
+              <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-lg">
+                <div>
+                  <p className="text-[9px] font-bold text-zinc-400 uppercase">Cuota Mayo</p>
+                  <p className="font-black text-sm text-red-600">${(MONTOS_CUOTA[jugador.categoria] || MONTOS_CUOTA.DEFAULT).toLocaleString()}</p>
+                </div>
+                {pago ? (
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold text-zinc-400 uppercase">Recibo</p>
+                    <p className="font-bold text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded">{pago.recibo}</p>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => handlePagar(jugador)}
+                    className="bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-lg active:scale-95"
+                  >
+                    Pagar Ahora
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
