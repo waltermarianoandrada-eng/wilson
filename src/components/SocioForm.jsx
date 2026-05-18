@@ -31,14 +31,41 @@ const SocioForm = ({ isOpen, onClose }) => {
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
-        const mappedData = data.map(row => ({
-          socioNr: row['Socio N°'] || row['Socio'] || row['socioNr'] || '',
-          apellido: row['Apellido'] || row['apellido'] || '',
-          nombre: row['Nombre'] || row['nombre'] || '',
-          dni: row['DNI'] || row['D.N.I.'] || row['dni'] || '',
-          fn: row['F. Nacimiento'] || row['FN'] || row['fn'] || '',
-          categoria: row['Categoria'] || row['Categoría'] || row['categoria'] || config.categorias[0] || 'A'
-        }));
+        const mappedData = data.map(row => {
+          // Buscar en diferentes variantes de nombres de columnas (ignorando mayúsculas)
+          const findCol = (keys) => {
+            const foundKey = Object.keys(row).find(k => keys.includes(k.toUpperCase().trim()));
+            return foundKey ? row[foundKey] : '';
+          };
+
+          const rawSocio = findCol(['SOCIO', 'SOCIO N°', 'SOCIO NO', 'SOCIONR']);
+          const rawDni = findCol(['D.N.I.', 'D.N.I. N°', 'DNI', 'DOCUMENTO']);
+          const rawFn = findCol(['FN', 'F.N.', 'F. NACIMIENTO', 'FECHA NACIMIENTO']);
+          const rawCategoria = findCol(['CATEGORIA', 'CATEGORÍA']) || config.categorias[0] || 'A';
+          
+          let apellido = findCol(['APELLIDO']);
+          let nombre = findCol(['NOMBRE']);
+          const nombreCompleto = findCol(['APELLIDO Y NOMBRE', 'NOMBRE Y APELLIDO', 'NOMBRE COMPLETO']);
+
+          if (nombreCompleto && !apellido && !nombre) {
+            const partes = nombreCompleto.trim().split(' ');
+            if (partes.length > 1) {
+              apellido = partes[0]; 
+              nombre = partes.slice(1).join(' '); 
+            } else {
+              apellido = nombreCompleto;
+            }
+          }
+
+          return {
+            socioNr: rawSocio,
+            apellido: apellido,
+            nombre: nombre,
+            dni: rawDni,
+            fn: rawFn,
+            categoria: rawCategoria
+          };
+        });
 
         const agregados = importarSocios(mappedData);
         alert(`¡Se importaron ${agregados} socios exitosamente!`);
