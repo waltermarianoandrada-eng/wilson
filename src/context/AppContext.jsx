@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jugadorService } from '../services/jugadorService';
 import { pagoService } from '../services/pagoService';
-import { MONTOS_CUOTA } from '../config/constants';
+import { MONTOS_CUOTA, CATEGORIAS } from '../config/constants';
 
 const AppContext = createContext();
 
@@ -13,8 +13,14 @@ export const AppProvider = ({ children }) => {
 
   const [config, setConfig] = useState(() => {
     const savedConfig = localStorage.getItem('APP_CONFIG_USER');
-    if (savedConfig) return JSON.parse(savedConfig);
-    return { montosCuota: MONTOS_CUOTA };
+    if (savedConfig) {
+      const parsed = JSON.parse(savedConfig);
+      return { 
+        montosCuota: parsed.montosCuota || MONTOS_CUOTA,
+        categorias: parsed.categorias || CATEGORIAS
+      };
+    }
+    return { montosCuota: MONTOS_CUOTA, categorias: CATEGORIAS };
   });
 
   const loadData = () => {

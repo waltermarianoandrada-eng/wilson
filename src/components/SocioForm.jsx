@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { UserPlus, X } from 'lucide-react';
-import { CATEGORIAS } from '../config/constants';
 
 const SocioForm = ({ isOpen, onClose }) => {
-  const { agregarSocio } = useApp();
+  const { agregarSocio, config } = useApp();
   const [formData, setFormData] = useState({
     socioNr: '',
     apellido: '',
     nombre: '',
     dni: '',
     fn: '',
-    categoria: 'A'
+    categoria: config.categorias[0] || 'A'
   });
 
   if (!isOpen) return null;
@@ -21,7 +20,7 @@ const SocioForm = ({ isOpen, onClose }) => {
     try {
       agregarSocio(formData);
       alert("Socio agregado correctamente");
-      setFormData({ socioNr: '', apellido: '', nombre: '', dni: '', fn: '', categoria: 'A' });
+      setFormData({ socioNr: '', apellido: '', nombre: '', dni: '', fn: '', categoria: config.categorias[0] || 'A' });
       onClose();
     } catch (error) {
       alert("Error: " + error.message);
@@ -52,7 +51,7 @@ const SocioForm = ({ isOpen, onClose }) => {
                 type="text"
                 value={formData.socioNr}
                 onChange={(e) => setFormData({...formData, socioNr: e.target.value})}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
                 placeholder="Ex: 1024"
               />
             </div>
@@ -63,7 +62,7 @@ const SocioForm = ({ isOpen, onClose }) => {
                 type="text"
                 value={formData.dni}
                 onChange={(e) => setFormData({...formData, dni: e.target.value})}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
                 placeholder="Sin puntos"
               />
             </div>
@@ -76,7 +75,7 @@ const SocioForm = ({ isOpen, onClose }) => {
               type="text"
               value={formData.apellido}
               onChange={(e) => setFormData({...formData, apellido: e.target.value})}
-              className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+              className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
             />
           </div>
 
@@ -87,7 +86,7 @@ const SocioForm = ({ isOpen, onClose }) => {
               type="text"
               value={formData.nombre}
               onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-              className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+              className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
             />
           </div>
 
@@ -99,7 +98,7 @@ const SocioForm = ({ isOpen, onClose }) => {
                 type="text"
                 value={formData.fn}
                 onChange={(e) => setFormData({...formData, fn: e.target.value})}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
                 placeholder="DD/MM/AAAA"
               />
             </div>
@@ -108,9 +107,9 @@ const SocioForm = ({ isOpen, onClose }) => {
               <select
                 value={formData.categoria}
                 onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all text-zinc-900 dark:text-white"
               >
-                {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                {config.categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
             </div>
           </div>

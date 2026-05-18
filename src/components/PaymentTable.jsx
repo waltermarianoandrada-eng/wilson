@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Trash2, Filter, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { CATEGORIAS } from '../config/constants';
 import { reportService } from '../services/reportService';
 
 const PaymentTable = () => {
@@ -52,7 +51,7 @@ const PaymentTable = () => {
             onChange={(e) => setCategoriaActual(e.target.value)}
             className="bg-red-600 text-white text-xs font-bold focus:outline-none border-none rounded px-3 py-1 shadow-sm"
           >
-            {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            {config.categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
           <span className="text-zinc-400 text-xs">(Mayo 2026)</span>
         </div>

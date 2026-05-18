@@ -4,22 +4,75 @@ import PaymentTable from './components/PaymentTable';
 import Summary from './components/Summary';
 import SocioForm from './components/SocioForm';
 import { AppProvider, useApp } from './context/AppContext';
-import { Bell, LogOut, Settings, BarChart3, Layers, Wallet } from 'lucide-react';
+import { Bell, LogOut, Settings, BarChart3, Layers, Wallet, Trash2 } from 'lucide-react';
 
 // Componentes de Vistas Simples
-const CategoriesView = () => (
-  <div className="card p-8 text-center space-y-4">
-    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
-      <Layers size={32} />
+
+const CategoriesView = () => {
+  const { config, updateConfig } = useApp();
+  const [newCat, setNewCat] = React.useState('');
+
+  const handleAdd = () => {
+    if (!newCat.trim()) return;
+    if (config.categorias.includes(newCat.trim())) {
+      alert("La categoría ya existe");
+      return;
+    }
+    const updatedCategorias = [...config.categorias, newCat.trim()];
+    const updatedMontos = { ...config.montosCuota, [newCat.trim()]: config.montosCuota.DEFAULT || 8000 };
+    updateConfig({ categorias: updatedCategorias, montosCuota: updatedMontos });
+    setNewCat('');
+  };
+
+  const handleDelete = (cat) => {
+    if (confirm(`¿Seguro que deseas eliminar la categoría "${cat}"?`)) {
+      const updatedCategorias = config.categorias.filter(c => c !== cat);
+      const updatedMontos = { ...config.montosCuota };
+      delete updatedMontos[cat];
+      updateConfig({ categorias: updatedCategorias, montosCuota: updatedMontos });
+    }
+  };
+
+  return (
+    <div className="card p-8 text-center space-y-6">
+      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto">
+        <Layers size={32} />
+      </div>
+      <h2 className="text-xl font-bold">Gestión de Categorías</h2>
+      <p className="text-zinc-500">Administra las categorías disponibles en el club</p>
+      
+      <div className="max-w-md mx-auto space-y-4 text-left">
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            placeholder="Nueva categoría (ej. Veteranos)" 
+            className="flex-1 p-2 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+            value={newCat}
+            onChange={e => setNewCat(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          />
+          <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-transform active:scale-95 shadow-lg">
+            Agregar
+          </button>
+        </div>
+
+        <div className="space-y-2 mt-4 max-h-64 overflow-y-auto pr-2">
+          {config.categorias.map(cat => (
+            <div key={cat} className="flex justify-between items-center p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
+              <span className="font-bold text-zinc-800 dark:text-zinc-200">{cat}</span>
+              <button onClick={() => handleDelete(cat)} className="text-zinc-400 hover:text-red-500 transition-colors p-1">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
+          {config.categorias.length === 0 && (
+            <p className="text-center text-zinc-500 text-sm py-4">No hay categorías. Agrega una arriba.</p>
+          )}
+        </div>
+      </div>
     </div>
-    <h2 className="text-xl font-bold">Gestión de Categorías</h2>
-    <p className="text-zinc-500">Aquí podrás gestionar las categorías (A, B, Infantil, etc.)</p>
-    <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-      <div className="p-4 border rounded-xl font-bold">Categoría A</div>
-      <div className="p-4 border rounded-xl font-bold">Categoría B</div>
-    </div>
-  </div>
-);
+  );
+};
 
 const ReportsView = () => (
   <div className="card p-8 text-center space-y-4">
