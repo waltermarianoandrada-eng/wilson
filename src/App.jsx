@@ -74,19 +74,36 @@ const CategoriesView = () => {
   );
 };
 
-const ReportsView = () => (
-  <div className="card p-8 text-center space-y-4">
-    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-      <BarChart3 size={32} />
+const ReportsView = () => {
+  const { pagos } = useApp();
+  
+  const recaudacionPorMes = pagos.reduce((acc, pago) => {
+    acc[pago.mes] = (acc[pago.mes] || 0) + pago.monto;
+    return acc;
+  }, {});
+
+  return (
+    <div className="card p-8 text-center space-y-4">
+      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto">
+        <BarChart3 size={32} />
+      </div>
+      <h2 className="text-xl font-bold">Reportes de Caja</h2>
+      <p className="text-zinc-500">Historial de recaudación mensual global</p>
+      <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-lg text-left max-w-md mx-auto">
+        {Object.keys(recaudacionPorMes).length > 0 ? (
+          Object.keys(recaudacionPorMes).map(mes => (
+            <div key={mes} className="flex justify-between border-b border-zinc-200 dark:border-zinc-700 py-3 last:border-0">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">{mes} 2026</span> 
+              <span className="font-bold text-green-600 font-mono">${recaudacionPorMes[mes].toLocaleString()}</span>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-zinc-500 py-4">No hay recaudación registrada aún.</p>
+        )}
+      </div>
     </div>
-    <h2 className="text-xl font-bold">Reportes de Caja</h2>
-    <p className="text-zinc-500">Historial de recaudación mensual</p>
-    <div className="bg-zinc-50 p-4 rounded-lg text-left">
-      <div className="flex justify-between border-b py-2"><span>Mayo 2026</span> <span className="font-bold text-green-600">$152,000</span></div>
-      <div className="flex justify-between py-2 text-zinc-400"><span>Abril 2026</span> <span>-</span></div>
-    </div>
-  </div>
-);
+  );
+};
 
 const ConfigView = () => {
   const { config, updateConfig } = useApp();
