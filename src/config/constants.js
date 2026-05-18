@@ -24,7 +24,7 @@ export const ESTADO_PAGO = {
 
 export const APP_CONFIG = {
   NOMBRE_CLUB: "Flamengo F.C.",
-  LOGO_URL: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg",
+  LOGO_URL: "/icon-512.png",
   MONEDA: "$",
   MES_ACTUAL: "Mayo"
 };
