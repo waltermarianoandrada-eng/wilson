@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const SocioForm = ({ isOpen, onClose }) => {
-  const { agregarSocio, config } = useApp();
+  const { agregarSocio, importarSocios, config } = useApp();
+  const fileInputRef = React.useRef(null);
+  
   const [formData, setFormData] = useState({
     socioNr: '',
     apellido: '',
@@ -14,6 +17,38 @@ const SocioForm = ({ isOpen, onClose }) => {
   });
 
   if (!isOpen) return null;
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        const mappedData = data.map(row => ({
+          socioNr: row['Socio N°'] || row['Socio'] || row['socioNr'] || '',
+          apellido: row['Apellido'] || row['apellido'] || '',
+          nombre: row['Nombre'] || row['nombre'] || '',
+          dni: row['DNI'] || row['D.N.I.'] || row['dni'] || '',
+          fn: row['F. Nacimiento'] || row['FN'] || row['fn'] || '',
+          categoria: row['Categoria'] || row['Categoría'] || row['categoria'] || config.categorias[0] || 'A'
+        }));
+
+        const agregados = importarSocios(mappedData);
+        alert(`¡Se importaron ${agregados} socios exitosamente!`);
+        onClose();
+      } catch (error) {
+        alert("Error procesando el archivo: " + error.message);
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -128,6 +163,28 @@ const SocioForm = ({ isOpen, onClose }) => {
             >
               Guardar Socio
             </button>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800 text-center">
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">¿Tienes una lista armada?</p>
+            <input 
+              type="file" 
+              accept=".xlsx, .xls, .csv" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+            />
+            <button 
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-700"
+            >
+              <Upload size={18} className="text-blue-600 dark:text-blue-400" />
+              Importar Excel (.xlsx)
+            </button>
+            <p className="text-[10px] text-zinc-400 mt-2">
+              Columnas sugeridas: Socio N°, Apellido, Nombre, DNI, FN, Categoría
+            </p>
           </div>
         </form>
       </div>

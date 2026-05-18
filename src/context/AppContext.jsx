@@ -47,6 +47,12 @@ export const AppProvider = ({ children }) => {
     loadData();
   };
 
+  const importarSocios = (sociosData) => {
+    const agregados = jugadorService.importarVarios(sociosData);
+    loadData();
+    return agregados;
+  };
+
   const updateConfig = (newConfig) => {
     const updated = { ...config, ...newConfig };
     setConfig(updated);
@@ -62,6 +68,7 @@ export const AppProvider = ({ children }) => {
     loading,
     registrarPago,
     agregarSocio,
+    importarSocios,
     refresh: loadData,
     config,
     updateConfig

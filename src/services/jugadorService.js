@@ -75,5 +75,44 @@ export const jugadorService = {
       const jugadores = jugadorService.getAll().filter(j => j.id !== id);
       storage.save(STORAGE_KEY, jugadores);
     });
+  },
+
+  /**
+   * Importa múltiples socios desde un array.
+   * @param {Array} sociosData 
+   * @returns {number} Cantidad de socios importados.
+   */
+  importarVarios: (sociosData) => {
+    return handleError(() => {
+      const jugadores = jugadorService.getAll();
+      let agregados = 0;
+
+      sociosData.forEach(data => {
+        // Validación básica
+        if (!data.apellido || !data.nombre) return;
+        
+        // Evitar duplicados por DNI (si lo provee) o Socio N°
+        const existe = jugadores.find(j => 
+          (data.dni && j.dni === String(data.dni)) || 
+          (data.socioNr && j.socioNr === String(data.socioNr))
+        );
+
+        if (!existe) {
+          jugadores.push({
+            id: data.socioNr ? String(data.socioNr) : Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            socioNr: data.socioNr ? String(data.socioNr) : '',
+            fn: data.fn || '',
+            apellido: sanitizeText(String(data.apellido).toUpperCase()),
+            nombre: sanitizeText(String(data.nombre).toUpperCase()),
+            dni: data.dni ? String(data.dni) : '',
+            categoria: data.categoria || 'A'
+          });
+          agregados++;
+        }
+      });
+
+      storage.save(STORAGE_KEY, jugadores);
+      return agregados;
+    });
   }
 };
