@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import PaymentTable from './components/PaymentTable';
 import Summary from './components/Summary';
 import SocioForm from './components/SocioForm';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useApp } from './context/AppContext';
 import { Bell, LogOut, Settings, BarChart3, Layers, Wallet } from 'lucide-react';
 
 // Componentes de Vistas Simples
@@ -35,22 +35,40 @@ const ReportsView = () => (
   </div>
 );
 
-const ConfigView = () => (
-  <div className="card p-8 text-center space-y-4">
-    <div className="w-16 h-16 bg-zinc-100 text-zinc-600 rounded-full flex items-center justify-center mx-auto">
-      <Settings size={32} />
-    </div>
-    <h2 className="text-xl font-bold">Configuración</h2>
-    <p className="text-zinc-500">Ajustes del sistema y montos de cuota</p>
-    <div className="space-y-4 max-w-xs mx-auto">
-      <div className="text-left">
-        <label className="text-xs font-bold text-zinc-400">VALOR CUOTA CATEGORÍA A</label>
-        <input type="text" className="w-full p-2 border rounded mt-1" defaultValue="$8,000" />
+const ConfigView = () => {
+  const { config, updateConfig } = useApp();
+  const [montos, setMontos] = React.useState(config.montosCuota);
+
+  const handleSave = () => {
+    updateConfig({ montosCuota: montos });
+  };
+
+  return (
+    <div className="card p-8 text-center space-y-4">
+      <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full flex items-center justify-center mx-auto">
+        <Settings size={32} />
       </div>
-      <button className="w-full bg-zinc-900 text-white p-2 rounded-lg font-bold">Guardar Cambios</button>
+      <h2 className="text-xl font-bold">Configuración</h2>
+      <p className="text-zinc-500">Ajustes del sistema y montos de cuota</p>
+      <div className="space-y-4 max-w-xs mx-auto mt-6">
+        {Object.keys(montos).filter(k => k !== 'DEFAULT').map(categoria => (
+          <div className="text-left" key={categoria}>
+            <label className="text-xs font-bold text-zinc-400">VALOR CUOTA CATEGORÍA {categoria}</label>
+            <input 
+              type="number" 
+              className="w-full p-2 border border-zinc-200 dark:border-zinc-800 rounded mt-1 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white" 
+              value={montos[categoria]} 
+              onChange={e => setMontos({...montos, [categoria]: Number(e.target.value)})}
+            />
+          </div>
+        ))}
+        <button onClick={handleSave} className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-2 rounded-lg font-bold mt-4 transition-transform active:scale-95">
+          Guardar Cambios
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   const [currentView, setCurrentView] = useState('Dashboard');

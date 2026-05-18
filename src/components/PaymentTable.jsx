@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Trash2, Filter, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { MONTOS_CUOTA, CATEGORIAS } from '../config/constants';
+import { CATEGORIAS } from '../config/constants';
 import { reportService } from '../services/reportService';
 
 const PaymentTable = () => {
-  const { jugadores, pagos, registrarPago, categoriaActual, setCategoriaActual } = useApp();
+  const { jugadores, pagos, registrarPago, categoriaActual, setCategoriaActual, config } = useApp();
+  const MONTOS_CUOTA = config.montosCuota;
   const [filtro, setFiltro] = useState('Todos');
 
   const getEstadoJugador = (jugadorId) => {

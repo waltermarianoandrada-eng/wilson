@@ -2,7 +2,8 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 
 const Summary = () => {
-  const { pagos, categoriaActual, jugadores } = useApp();
+  const { pagos, categoriaActual, jugadores, config } = useApp();
+  const MONTOS_CUOTA = config.montosCuota;
 
   const totalMayo = pagos
     .filter(p => {
@@ -19,7 +20,7 @@ const Summary = () => {
 
   const totalAbril = pagos
     .filter(p => p.pendientes.includes("Abril"))
-    .length * 8000; // Simulación según planilla
+    .length * (MONTOS_CUOTA[categoriaActual] || MONTOS_CUOTA.DEFAULT); // Dinámico según categoría
 
   const totalGeneral = totalMayo + totalAbril;
 
@@ -36,7 +37,7 @@ const Summary = () => {
           <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
             <span>+ 1 Cta Abril Contreras Samuel:</span>
             <span className="font-mono font-bold text-zinc-900 dark:text-white">
-              $8,000
+              ${(MONTOS_CUOTA[categoriaActual] || MONTOS_CUOTA.DEFAULT).toLocaleString()}
             </span>
           </div>
           <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 flex justify-between items-end">
@@ -44,7 +45,7 @@ const Summary = () => {
             <div className="text-right">
               <p className="text-[10px] text-zinc-500 font-bold uppercase">Total Recaudado</p>
               <p className="text-2xl font-black text-red-600 font-mono">
-                ${(totalGeneral + 8000).toLocaleString()}
+                ${(totalGeneral + (MONTOS_CUOTA[categoriaActual] || MONTOS_CUOTA.DEFAULT)).toLocaleString()}
               </p>
             </div>
           </div>

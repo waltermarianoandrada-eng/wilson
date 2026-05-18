@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jugadorService } from '../services/jugadorService';
 import { pagoService } from '../services/pagoService';
+import { MONTOS_CUOTA } from '../config/constants';
 
 const AppContext = createContext();
 
@@ -9,6 +10,12 @@ export const AppProvider = ({ children }) => {
   const [pagos, setPagos] = useState([]);
   const [categoriaActual, setCategoriaActual] = useState('A');
   const [loading, setLoading] = useState(true);
+
+  const [config, setConfig] = useState(() => {
+    const savedConfig = localStorage.getItem('APP_CONFIG_USER');
+    if (savedConfig) return JSON.parse(savedConfig);
+    return { montosCuota: MONTOS_CUOTA };
+  });
 
   const loadData = () => {
     setLoading(true);
@@ -34,6 +41,13 @@ export const AppProvider = ({ children }) => {
     loadData();
   };
 
+  const updateConfig = (newConfig) => {
+    const updated = { ...config, ...newConfig };
+    setConfig(updated);
+    localStorage.setItem('APP_CONFIG_USER', JSON.stringify(updated));
+    alert("¡Configuración guardada correctamente!");
+  };
+
   const value = {
     jugadores,
     pagos,
@@ -42,7 +56,9 @@ export const AppProvider = ({ children }) => {
     loading,
     registrarPago,
     agregarSocio,
-    refresh: loadData
+    refresh: loadData,
+    config,
+    updateConfig
   };
 
   return (
