@@ -86,5 +86,17 @@ export const pagoService = {
       pago: pagoMes || null,
       pendientes: pagoMes?.pendientes || []
     };
+  },
+
+  /**
+   * Elimina un pago por ID.
+   * @param {string} id 
+   */
+  eliminarPago: (id) => {
+    return handleError(() => {
+      const pagos = pagoService.getAll().filter(p => p.id !== id);
+      storage.save(STORAGE_KEY, pagos);
+    });
   }
 };
+

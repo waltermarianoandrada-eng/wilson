@@ -5,6 +5,7 @@ import Summary from './components/Summary';
 import SocioForm from './components/SocioForm';
 import { AppProvider, useApp } from './context/AppContext';
 import { Bell, LogOut, Settings, BarChart3, Layers, Wallet, Trash2 } from 'lucide-react';
+import { MESES, ANIOS } from './config/constants';
 
 // Componentes de Vistas Simples
 
@@ -77,8 +78,9 @@ const CategoriesView = () => {
 const ReportsView = () => {
   const { pagos } = useApp();
   
-  const recaudacionPorMes = pagos.reduce((acc, pago) => {
-    acc[pago.mes] = (acc[pago.mes] || 0) + pago.monto;
+  const recaudacionPorPeriodo = pagos.reduce((acc, pago) => {
+    const key = `${pago.mes} ${pago.anio || 2026}`;
+    acc[key] = (acc[key] || 0) + pago.monto;
     return acc;
   }, {});
 
@@ -90,11 +92,11 @@ const ReportsView = () => {
       <h2 className="text-xl font-bold">Reportes de Caja</h2>
       <p className="text-zinc-500">Historial de recaudación mensual global</p>
       <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-lg text-left max-w-md mx-auto">
-        {Object.keys(recaudacionPorMes).length > 0 ? (
-          Object.keys(recaudacionPorMes).map(mes => (
-            <div key={mes} className="flex justify-between border-b border-zinc-200 dark:border-zinc-700 py-3 last:border-0">
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">{mes} 2026</span> 
-              <span className="font-bold text-green-600 font-mono">${recaudacionPorMes[mes].toLocaleString()}</span>
+        {Object.keys(recaudacionPorPeriodo).length > 0 ? (
+          Object.keys(recaudacionPorPeriodo).map(periodo => (
+            <div key={periodo} className="flex justify-between border-b border-zinc-200 dark:border-zinc-700 py-3 last:border-0">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">{periodo}</span> 
+              <span className="font-bold text-green-600 font-mono">${recaudacionPorPeriodo[periodo].toLocaleString()}</span>
             </div>
           ))
         ) : (
@@ -140,9 +142,22 @@ const ConfigView = () => {
   );
 };
 
-function App() {
+function MainContent() {
   const [currentView, setCurrentView] = useState('Dashboard');
   const [isSocioFormOpen, setIsSocioFormOpen] = useState(false);
+  const [editSocioData, setEditSocioData] = useState(null);
+  
+  const { mesActual, setMesActual, anioActual, setAnioActual } = useApp();
+
+  const handleEditSocio = (socio) => {
+    setEditSocioData(socio);
+    setIsSocioFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsSocioFormOpen(false);
+    setEditSocioData(null);
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -151,7 +166,7 @@ function App() {
       case 'Configuración': return <ConfigView />;
       default: return (
         <>
-          <PaymentTable />
+          <PaymentTable onEditSocio={handleEditSocio} />
           <Summary />
         </>
       );
@@ -159,39 +174,67 @@ function App() {
   };
 
   return (
-    <AppProvider>
-      <div className="flex min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
-        <Sidebar 
-          currentView={currentView} 
-          onViewChange={setCurrentView}
-          onAddSocio={() => setIsSocioFormOpen(true)} 
-        />
-        
-        <main className="flex-1 flex flex-col">
-          <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-8 bg-zinc-900 text-white">
+    <div className="flex min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans">
+      <Sidebar 
+        currentView={currentView} 
+        onViewChange={setCurrentView}
+        onAddSocio={() => setIsSocioFormOpen(true)} 
+      />
+      
+      <main className="flex-1 flex flex-col">
+        <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-8 bg-zinc-900 text-white">
+          <div className="flex items-center gap-4">
             <h2 className="text-lg font-bold tracking-tight uppercase">
               {currentView === 'Dashboard' ? 'Gestión Interna - Flamengo F.C.' : currentView}
             </h2>
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-zinc-800 rounded-full transition-colors relative">
-                <Bell size={20} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border-2 border-zinc-900"></span>
-              </button>
-              <button className="p-2 hover:bg-zinc-800 rounded-full transition-colors">
-                <LogOut size={20} />
-              </button>
-            </div>
-          </header>
-
-          <div className="p-8 flex-1 overflow-y-auto">
-            <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {renderView()}
+            
+            {/* Selector de Período Financiero */}
+            <div className="hidden sm:flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1 text-xs">
+              <span className="text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Período:</span>
+              <select
+                value={mesActual}
+                onChange={(e) => setMesActual(e.target.value)}
+                className="bg-transparent text-white font-bold outline-none border-none cursor-pointer hover:text-red-400 transition-colors"
+              >
+                {MESES.map(m => <option key={m} value={m} className="bg-zinc-900 text-white">{m}</option>)}
+              </select>
+              <select
+                value={anioActual}
+                onChange={(e) => setAnioActual(Number(e.target.value))}
+                className="bg-transparent text-white font-bold outline-none border-none cursor-pointer hover:text-red-400 transition-colors"
+              >
+                {ANIOS.map(a => <option key={a} value={a} className="bg-zinc-900 text-white">{a}</option>)}
+              </select>
             </div>
           </div>
-        </main>
 
-        <SocioForm isOpen={isSocioFormOpen} onClose={() => setIsSocioFormOpen(false)} />
-      </div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-zinc-800 rounded-full transition-colors relative">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border-2 border-zinc-900"></span>
+            </button>
+            <button className="p-2 hover:bg-zinc-800 rounded-full transition-colors">
+              <LogOut size={20} />
+            </button>
+          </div>
+        </header>
+
+        <div className="p-8 flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {renderView()}
+          </div>
+        </div>
+      </main>
+
+      <SocioForm isOpen={isSocioFormOpen} onClose={handleCloseForm} editSocio={editSocioData} />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <MainContent />
     </AppProvider>
   );
 }

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { UserPlus, X, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-const SocioForm = ({ isOpen, onClose }) => {
-  const { agregarSocio, importarSocios, config } = useApp();
+const SocioForm = ({ isOpen, onClose, editSocio }) => {
+  const { agregarSocio, editarSocio, config } = useApp();
   const fileInputRef = React.useRef(null);
+  const { importarSocios } = useApp();
   
   const [formData, setFormData] = useState({
     socioNr: '',
@@ -15,6 +16,28 @@ const SocioForm = ({ isOpen, onClose }) => {
     fn: '',
     categoria: config.categorias[0] || 'A'
   });
+
+  useEffect(() => {
+    if (editSocio) {
+      setFormData({
+        socioNr: editSocio.socioNr || '',
+        apellido: editSocio.apellido || '',
+        nombre: editSocio.nombre || '',
+        dni: editSocio.dni || '',
+        fn: editSocio.fn || '',
+        categoria: editSocio.categoria || config.categorias[0] || 'A'
+      });
+    } else {
+      setFormData({
+        socioNr: '',
+        apellido: '',
+        nombre: '',
+        dni: '',
+        fn: '',
+        categoria: config.categorias[0] || 'A'
+      });
+    }
+  }, [editSocio, isOpen, config.categorias]);
 
   if (!isOpen) return null;
 
@@ -32,7 +55,6 @@ const SocioForm = ({ isOpen, onClose }) => {
         const data = XLSX.utils.sheet_to_json(ws);
         
         const mappedData = data.map(row => {
-          // Buscar en diferentes variantes de nombres de columnas (ignorando mayúsculas)
           const findCol = (keys) => {
             const foundKey = Object.keys(row).find(k => keys.includes(k.toUpperCase().trim()));
             return foundKey ? row[foundKey] : '';
@@ -80,8 +102,13 @@ const SocioForm = ({ isOpen, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     try {
-      agregarSocio(formData);
-      alert("Socio agregado correctamente");
+      if (editSocio) {
+        editarSocio(editSocio.id, formData);
+        alert("Socio actualizado correctamente");
+      } else {
+        agregarSocio(formData);
+        alert("Socio agregado correctamente");
+      }
       setFormData({ socioNr: '', apellido: '', nombre: '', dni: '', fn: '', categoria: config.categorias[0] || 'A' });
       onClose();
     } catch (error) {
@@ -90,16 +117,18 @@ const SocioForm = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
         <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg">
               <UserPlus size={20} />
             </div>
-            <h2 className="font-bold text-zinc-900 dark:text-white uppercase tracking-tight">Nuevo Socio</h2>
+            <h2 className="font-bold text-zinc-900 dark:text-white uppercase tracking-tight">
+              {editSocio ? 'Editar Socio' : 'Nuevo Socio'}
+            </h2>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer">
             <X size={20} />
           </button>
         </div>
@@ -180,39 +209,41 @@ const SocioForm = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-800"
+              className="flex-1 px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-800 cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-lg shadow-red-600/20 transition-all active:scale-95"
+              className="flex-1 px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-lg shadow-red-600/20 transition-all active:scale-95 cursor-pointer"
             >
-              Guardar Socio
+              {editSocio ? 'Guardar Cambios' : 'Guardar Socio'}
             </button>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800 text-center">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">¿Tienes una lista armada?</p>
-            <input 
-              type="file" 
-              accept=".xlsx, .xls, .csv" 
-              className="hidden" 
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-            />
-            <button 
-              type="button"
-              onClick={() => fileInputRef.current.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-700"
-            >
-              <Upload size={18} className="text-blue-600 dark:text-blue-400" />
-              Importar Excel (.xlsx)
-            </button>
-            <p className="text-[10px] text-zinc-400 mt-2">
-              Columnas sugeridas: Socio N°, Apellido, Nombre, DNI, FN, Categoría
-            </p>
-          </div>
+          {!editSocio && (
+            <div className="pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800 text-center">
+              <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">¿Tienes una lista armada?</p>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls, .csv" 
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+              />
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors border border-zinc-200 dark:border-zinc-700 cursor-pointer"
+              >
+                <Upload size={18} className="text-blue-600 dark:text-blue-400" />
+                Importar Excel (.xlsx)
+              </button>
+              <p className="text-[10px] text-zinc-400 mt-2">
+                Columnas sugeridas: Socio N°, Apellido, Nombre, DNI, FN, Categoría
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

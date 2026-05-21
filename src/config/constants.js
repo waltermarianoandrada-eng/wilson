@@ -28,3 +28,6 @@ export const APP_CONFIG = {
   MONEDA: "$",
   MES_ACTUAL: "Mayo"
 };
+
+export const ANIOS = [2025, 2026, 2027, 2028];
+

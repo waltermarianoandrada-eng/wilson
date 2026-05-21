@@ -9,6 +9,8 @@ export const AppProvider = ({ children }) => {
   const [jugadores, setJugadores] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [categoriaActual, setCategoriaActual] = useState('A');
+  const [mesActual, setMesActual] = useState('Mayo');
+  const [anioActual, setAnioActual] = useState(2026);
   const [loading, setLoading] = useState(true);
 
   const [config, setConfig] = useState(() => {
@@ -42,8 +44,24 @@ export const AppProvider = ({ children }) => {
     alert("¡Pago registrado con éxito!");
   };
 
+  const eliminarPago = (id) => {
+    pagoService.eliminarPago(id);
+    loadData();
+    alert("¡Pago anulado con éxito!");
+  };
+
   const agregarSocio = (socio) => {
     jugadorService.create(socio);
+    loadData();
+  };
+
+  const editarSocio = (id, socioData) => {
+    jugadorService.update(id, socioData);
+    loadData();
+  };
+
+  const eliminarSocio = (id) => {
+    jugadorService.remove(id);
     loadData();
   };
 
@@ -65,9 +83,16 @@ export const AppProvider = ({ children }) => {
     pagos,
     categoriaActual,
     setCategoriaActual,
+    mesActual,
+    setMesActual,
+    anioActual,
+    setAnioActual,
     loading,
     registrarPago,
+    eliminarPago,
     agregarSocio,
+    editarSocio,
+    eliminarSocio,
     importarSocios,
     refresh: loadData,
     config,

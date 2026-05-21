@@ -78,6 +78,35 @@ export const jugadorService = {
   },
 
   /**
+   * Actualiza los datos de un socio.
+   * @param {string} id
+   * @param {Object} updatedData
+   * @returns {Object} Socio actualizado.
+   */
+  update: (id, updatedData) => {
+    return handleError(() => {
+      const jugadores = jugadorService.getAll();
+      const index = jugadores.findIndex(j => j.id === id);
+      if (index === -1) throw new Error('Socio no encontrado');
+      
+      const actualizado = {
+        ...jugadores[index],
+        ...updatedData,
+        apellido: updatedData.apellido ? sanitizeText(updatedData.apellido.toUpperCase()) : jugadores[index].apellido,
+        nombre: updatedData.nombre ? sanitizeText(updatedData.nombre.toUpperCase()) : jugadores[index].nombre,
+        dni: updatedData.dni ? String(updatedData.dni) : jugadores[index].dni
+      };
+      
+      if (updatedData.dni && !isValidDNI(updatedData.dni)) throw new Error('DNI inválido');
+      
+      jugadores[index] = actualizado;
+      storage.save(STORAGE_KEY, jugadores);
+      return actualizado;
+    });
+  },
+
+
+  /**
    * Importa múltiples socios desde un array.
    * @param {Array} sociosData 
    * @returns {number} Cantidad de socios importados.
